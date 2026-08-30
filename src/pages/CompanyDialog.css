@@ -1,0 +1,119 @@
+.company-overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 1000;
+}
+
+.company-dialog {
+    width: 450px;
+
+    background: white;
+
+    border-radius: 15px;
+
+    padding: 25px;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.company-dialog-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 25px;
+}
+
+.company-dialog-header h2 {
+    margin: 0;
+}
+
+.company-close {
+    border: none;
+
+    background: transparent;
+
+    font-size: 28px;
+
+    cursor: pointer;
+
+    color: #555;
+}
+
+.company-form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.company-form label {
+    font-weight: 600;
+
+    margin-top: 8px;
+}
+
+.company-form input,
+.company-form textarea {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+.company-form input:focus,
+.company-form textarea:focus {
+    border-color: #2864e8;
+}
+
+.company-form textarea {
+    height: 110px;
+
+    resize: none;
+}
+
+.company-save {
+    margin-top: 15px;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #2864e8;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.company-save:hover {
+    background: #1e4fb8;
+}
+.company-form label {
+    text-align: left;
+    align-self: flex-start;
+    font-weight: 600;
+    margin-top: 8px;
+}
