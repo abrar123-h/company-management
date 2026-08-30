@@ -1,0 +1,108 @@
+.vendor-overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 1000;
+}
+
+.vendor-dialog {
+    width: 450px;
+
+    background: white;
+
+    border-radius: 15px;
+
+    padding: 25px;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.vendor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.vendor-header h2 {
+    margin: 0;
+}
+
+.vendor-close {
+    border: none;
+    background: transparent;
+
+    font-size: 28px;
+
+    cursor: pointer;
+}
+
+.vendor-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+.vendor-form label {
+    font-weight: 600;
+
+    margin-top: 7px;
+}
+
+.vendor-form input,
+.vendor-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+}
+
+.vendor-form textarea {
+    height: 100px;
+
+    resize: none;
+}
+
+.vendor-save {
+    margin-top: 15px;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #2864e8;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.vendor-save:hover {
+    background: #1e4fb8;
+}
+.vendor-form label {
+    display: block;
+    text-align: left;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
