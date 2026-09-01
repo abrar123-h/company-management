@@ -1,46 +1,68 @@
 import os
 import uuid
 
-import psycopg2
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-
-
-# FLASK APP
-
-
 app = Flask(__name__)
-
-# Allow React/Vercel frontend to call this Flask API
 CORS(app)
 
+# DATABASE TYPE
 
+DATABASE_TYPE = os.environ.get(
+    "DATABASE_TYPE",
+    "sqlserver"
+).lower()
 
+# DATABASE CONNECTION
 
 def get_connection():
-    database_url = os.environ.get("DATABASE_URL")
 
-    if not database_url:
-        raise RuntimeError(
-            "DATABASE_URL environment variable is not set"
-        )
+    if DATABASE_TYPE == "postgres":
 
-    return psycopg2.connect(database_url)
+        import psycopg2
 
+        database_url = os.environ.get("DATABASE_URL")
 
+        if not database_url:
+            raise RuntimeError(
+                "DATABASE_URL environment variable is not set"
+            )
 
+        return psycopg2.connect(database_url)
+
+    import pyodbc
+
+    return pyodbc.connect(
+        "DRIVER={ODBC Driver 17 for SQL Server};"
+        r"SERVER=Abibro\SQLEXPRESS01;"
+        "DATABASE=StudentAuthDB;"
+        "Trusted_Connection=yes;"
+    )
+
+# DATABASE EXECUTE HELPER
+
+def execute_query(cursor, query, params=None):
+
+    if DATABASE_TYPE == "sqlserver":
+        query = query.replace("%s", "?")
+
+    if params is None:
+        cursor.execute(query)
+    else:
+        cursor.execute(query, params)
+
+# HOME
 
 @app.route("/", methods=["GET"])
 def home():
+
     return jsonify({
-        "message": "Flask API is working"
+        "message": "Flask API is working",
+        "database": DATABASE_TYPE
     }), 200
 
-
-
 # SIGNUP
-
 
 @app.route("/signup", methods=["POST"])
 def signup():
@@ -61,10 +83,12 @@ def signup():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             SELECT id
             FROM users
@@ -78,13 +102,30 @@ def signup():
                 "message": "Email already registered"
             }), 400
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             INSERT INTO users
-            (name, email, phone, password)
-            VALUES (%s, %s, %s, %s)
+            (
+                name,
+                email,
+                phone,
+                password
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s
+            )
             """,
-            (name, email, phone, password)
+            (
+                name,
+                email,
+                phone,
+                password
+            )
         )
 
         connection.commit()
@@ -112,10 +153,7 @@ def signup():
         if connection:
             connection.close()
 
-
-
 # LOGIN
-
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -134,17 +172,22 @@ def login():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             SELECT id, name
             FROM users
             WHERE email = %s
             AND password = %s
             """,
-            (email, password)
+            (
+                email,
+                password
+            )
         )
 
         user = cursor.fetchone()
@@ -176,10 +219,7 @@ def login():
         if connection:
             connection.close()
 
-
-
 # ADD COMPANY
-
 
 @app.route("/companies", methods=["POST"])
 def add_company():
@@ -198,10 +238,12 @@ def add_company():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             INSERT INTO companies
             (
@@ -247,10 +289,7 @@ def add_company():
         if connection:
             connection.close()
 
-
-
 # GET COMPANIES
-
 
 @app.route("/companies", methods=["GET"])
 def get_companies():
@@ -259,14 +298,14 @@ def get_companies():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
-            SELECT
-                id,
-                company_name
+            SELECT id, company_name
             FROM companies
             ORDER BY company_name
             """
@@ -300,10 +339,7 @@ def get_companies():
         if connection:
             connection.close()
 
-
-
 # ADD PRODUCT
-
 
 @app.route("/products", methods=["POST"])
 def add_product():
@@ -331,11 +367,12 @@ def add_product():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        # Check company
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             SELECT id
             FROM companies
@@ -349,13 +386,13 @@ def add_product():
                 "message": "Company not found"
             }), 404
 
-        # Generate serial code
         serial_code = (
             "PROD-"
             + uuid.uuid4().hex[:8].upper()
         )
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             INSERT INTO products
             (
@@ -414,10 +451,7 @@ def add_product():
         if connection:
             connection.close()
 
-
-
 # GET PRODUCTS
-
 
 @app.route("/products", methods=["GET"])
 def get_products():
@@ -426,10 +460,12 @@ def get_products():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             SELECT
                 id,
@@ -465,9 +501,7 @@ def get_products():
                     else "0"
                 ),
                 "serial_code": row[5],
-                "retail_price": float(
-                    row[6] or 0
-                )
+                "retail_price": float(row[6] or 0)
             })
 
         return jsonify(result), 200
@@ -488,10 +522,7 @@ def get_products():
         if connection:
             connection.close()
 
-
-
 # ADD VENDOR
-
 
 @app.route("/vendors", methods=["POST"])
 def add_vendor():
@@ -517,48 +548,93 @@ def add_vendor():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO vendors
-            (
-                vendor_name,
-                business_name,
-                contact,
-                address,
-                creation_date,
-                total_amount,
-                paid_amount,
-                credit_amount,
-                payment_status
+        if DATABASE_TYPE == "postgres":
+
+            cursor.execute(
+                """
+                INSERT INTO vendors
+                (
+                    vendor_name,
+                    business_name,
+                    contact,
+                    address,
+                    creation_date,
+                    total_amount,
+                    paid_amount,
+                    credit_amount,
+                    payment_status
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    CURRENT_TIMESTAMP,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+                RETURNING id
+                """,
+                (
+                    vendor_name,
+                    business_name,
+                    contact,
+                    address,
+                    0,
+                    0,
+                    0,
+                    "Unpaid"
+                )
             )
-            VALUES
-            (
-                %s,
-                %s,
-                %s,
-                %s,
-                CURRENT_TIMESTAMP,
-                %s,
-                %s,
-                %s,
-                %s
+
+        else:
+
+            cursor.execute(
+                """
+                INSERT INTO vendors
+                (
+                    vendor_name,
+                    business_name,
+                    contact,
+                    address,
+                    creation_date,
+                    total_amount,
+                    paid_amount,
+                    credit_amount,
+                    payment_status
+                )
+                OUTPUT INSERTED.id
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    CURRENT_TIMESTAMP,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
+                """,
+                (
+                    vendor_name,
+                    business_name,
+                    contact,
+                    address,
+                    0,
+                    0,
+                    0,
+                    "Unpaid"
+                )
             )
-            RETURNING id
-            """,
-            (
-                vendor_name,
-                business_name,
-                contact,
-                address,
-                0,
-                0,
-                0,
-                "Unpaid"
-            )
-        )
 
         new_vendor_id = cursor.fetchone()[0]
 
@@ -591,10 +667,7 @@ def add_vendor():
         if connection:
             connection.close()
 
-
-
 # GET VENDORS
-
 
 @app.route("/vendors", methods=["GET"])
 def get_vendors():
@@ -603,10 +676,12 @@ def get_vendors():
     cursor = None
 
     try:
+
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             SELECT
                 id,
@@ -652,10 +727,7 @@ def get_vendors():
         if connection:
             connection.close()
 
-
-
 # ASSIGN STOCK
-
 
 @app.route("/vendors/assign-stock", methods=["POST"])
 def assign_stock():
@@ -693,25 +765,21 @@ def assign_stock():
         }), 400
 
     if vendor_id <= 0:
-
         return jsonify({
             "message": "Invalid vendor ID"
         }), 400
 
     if product_id <= 0:
-
         return jsonify({
             "message": "Invalid product ID"
         }), 400
 
     if assign_quantity <= 0:
-
         return jsonify({
             "message": "Quantity must be greater than 0"
         }), 400
 
     if paid_amount < 0:
-
         return jsonify({
             "message": "Paid amount cannot be negative"
         }), 400
@@ -724,10 +792,8 @@ def assign_stock():
         connection = get_connection()
         cursor = connection.cursor()
 
-      
-       
-
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             SELECT id
             FROM vendors
@@ -737,31 +803,40 @@ def assign_stock():
         )
 
         if not cursor.fetchone():
-
             return jsonify({
                 "message": "Vendor not found"
             }), 404
 
-       
-        # GET PRODUCT
-        
+        if DATABASE_TYPE == "postgres":
 
-        cursor.execute(
-            """
-            SELECT
-                quantity,
-                retail_price
-            FROM products
-            WHERE id = %s
-            FOR UPDATE
-            """,
-            (product_id,)
-        )
+            cursor.execute(
+                """
+                SELECT
+                    quantity,
+                    retail_price
+                FROM products
+                WHERE id = %s
+                FOR UPDATE
+                """,
+                (product_id,)
+            )
+
+        else:
+
+            cursor.execute(
+                """
+                SELECT
+                    quantity,
+                    retail_price
+                FROM products
+                WHERE id = ?
+                """,
+                (product_id,)
+            )
 
         product = cursor.fetchone()
 
         if not product:
-
             return jsonify({
                 "message": "Product not found"
             }), 404
@@ -785,10 +860,6 @@ def assign_stock():
             product[1] or 0
         )
 
-        
-        # CHECK STOCK
-        
-
         if assign_quantity > available_quantity:
 
             return jsonify({
@@ -797,18 +868,10 @@ def assign_stock():
                 "requested_quantity": assign_quantity
             }), 400
 
-        
-        # CALCULATE STOCK
-        
-
         remaining_quantity = (
             available_quantity
             - assign_quantity
         )
-
-        
-        # CALCULATE MONEY
-        
 
         total_amount = (
             assign_quantity
@@ -831,27 +894,15 @@ def assign_stock():
             - paid_amount
         )
 
-        
-        # PAYMENT STATUS
-        
-
         if credit_amount == 0:
-
             payment_status = "Paid"
-
         elif paid_amount > 0:
-
             payment_status = "Half"
-
         else:
-
             payment_status = "Credit"
 
-        
-        # UPDATE VENDOR
-        
-
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             UPDATE vendors
             SET
@@ -874,11 +925,8 @@ def assign_stock():
             )
         )
 
-        
-        # UPDATE PRODUCT STOCK
-        
-
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             UPDATE products
             SET quantity = %s
@@ -892,19 +940,19 @@ def assign_stock():
 
         connection.commit()
 
-       -
-        # RESPONSE
-       
-
         return jsonify({
 
-            "message": "Stock assigned successfully",
+            "message":
+                "Stock assigned successfully",
 
-            "vendor_id": vendor_id,
+            "vendor_id":
+                vendor_id,
 
-            "product_id": product_id,
+            "product_id":
+                product_id,
 
-            "assigned_quantity": assign_quantity,
+            "assigned_quantity":
+                assign_quantity,
 
             "available_quantity_before":
                 available_quantity,
@@ -948,9 +996,7 @@ def assign_stock():
         if connection:
             connection.close()
 
-
 # GET ASSIGNED STOCK
-
 
 @app.route("/vendors/assigned-stock", methods=["GET"])
 def get_assigned_stock():
@@ -963,7 +1009,8 @@ def get_assigned_stock():
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             """
             SELECT
                 v.id AS vendor_id,
@@ -996,59 +1043,34 @@ def get_assigned_stock():
 
         for row in rows:
 
+            try:
+                remaining_stock = int(row[8] or 0)
+            except (ValueError, TypeError):
+                remaining_stock = 0
+
             result.append({
 
-                "id":
-                    row[0],
-
-                "vendor_id":
-                    row[0],
-
-                "vendor_name":
-                    row[1],
-
-                "business_name":
-                    row[2],
-
-                "product_id":
-                    row[3],
-
-                "product_name":
-                    row[4],
-
-                "serial_code":
-                    row[5],
-
-                "retail_price":
-                    float(row[6] or 0),
-
-                "assigned_quantity":
-                    int(row[7] or 0),
-
-                "remaining_stock":
-                    int(row[8] or 0),
-
-                "total_amount":
-                    float(row[9] or 0),
-
-                "paid_amount":
-                    float(row[10] or 0),
-
-                "credit_amount":
-                    float(row[11] or 0),
-
-                "payment_status":
-                    row[12]
+                "id": row[0],
+                "vendor_id": row[0],
+                "vendor_name": row[1],
+                "business_name": row[2],
+                "product_id": row[3],
+                "product_name": row[4],
+                "serial_code": row[5],
+                "retail_price": float(row[6] or 0),
+                "assigned_quantity": int(row[7] or 0),
+                "remaining_stock": remaining_stock,
+                "total_amount": float(row[9] or 0),
+                "paid_amount": float(row[10] or 0),
+                "credit_amount": float(row[11] or 0),
+                "payment_status": row[12]
             })
 
         return jsonify(result), 200
 
     except Exception as e:
 
-        print(
-            "GET ASSIGNED STOCK ERROR:",
-            e
-        )
+        print("GET ASSIGNED STOCK ERROR:", e)
 
         return jsonify({
             "error": str(e)
@@ -1062,10 +1084,7 @@ def get_assigned_stock():
         if connection:
             connection.close()
 
-
-
 # DASHBOARD COUNTS
-
 
 @app.route("/dashboard/counts", methods=["GET"])
 def dashboard_counts():
@@ -1078,43 +1097,36 @@ def dashboard_counts():
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             "SELECT COUNT(*) FROM companies"
         )
 
         company_count = cursor.fetchone()[0]
 
-        cursor.execute(
+        execute_query(
+            cursor,
             "SELECT COUNT(*) FROM products"
         )
 
         product_count = cursor.fetchone()[0]
 
-        cursor.execute(
+        execute_query(
+            cursor,
             "SELECT COUNT(*) FROM vendors"
         )
 
         vendor_count = cursor.fetchone()[0]
 
         return jsonify({
-
-            "companies":
-                company_count,
-
-            "products":
-                product_count,
-
-            "vendors":
-                vendor_count
-
+            "companies": company_count,
+            "products": product_count,
+            "vendors": vendor_count
         }), 200
 
     except Exception as e:
 
-        print(
-            "DASHBOARD COUNT ERROR:",
-            e
-        )
+        print("DASHBOARD COUNT ERROR:", e)
 
         return jsonify({
             "error": str(e)
@@ -1128,10 +1140,7 @@ def dashboard_counts():
         if connection:
             connection.close()
 
-
-
 # COMPANY COUNT
-
 
 @app.route("/companies/count", methods=["GET"])
 def companies_count():
@@ -1144,7 +1153,8 @@ def companies_count():
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             "SELECT COUNT(*) FROM companies"
         )
 
@@ -1156,10 +1166,7 @@ def companies_count():
 
     except Exception as e:
 
-        print(
-            "COMPANY COUNT ERROR:",
-            e
-        )
+        print("COMPANY COUNT ERROR:", e)
 
         return jsonify({
             "error": str(e)
@@ -1173,10 +1180,7 @@ def companies_count():
         if connection:
             connection.close()
 
-
-
 # PRODUCT COUNT
-
 
 @app.route("/products/count", methods=["GET"])
 def products_count():
@@ -1189,7 +1193,8 @@ def products_count():
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             "SELECT COUNT(*) FROM products"
         )
 
@@ -1201,10 +1206,7 @@ def products_count():
 
     except Exception as e:
 
-        print(
-            "PRODUCT COUNT ERROR:",
-            e
-        )
+        print("PRODUCT COUNT ERROR:", e)
 
         return jsonify({
             "error": str(e)
@@ -1218,10 +1220,7 @@ def products_count():
         if connection:
             connection.close()
 
-
-
 # VENDOR COUNT
-
 
 @app.route("/vendors/count", methods=["GET"])
 def vendors_count():
@@ -1234,7 +1233,8 @@ def vendors_count():
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(
+        execute_query(
+            cursor,
             "SELECT COUNT(*) FROM vendors"
         )
 
@@ -1246,10 +1246,7 @@ def vendors_count():
 
     except Exception as e:
 
-        print(
-            "VENDOR COUNT ERROR:",
-            e
-        )
+        print("VENDOR COUNT ERROR:", e)
 
         return jsonify({
             "error": str(e)
@@ -1263,10 +1260,7 @@ def vendors_count():
         if connection:
             connection.close()
 
-
-
 # START FLASK
-
 
 if __name__ == "__main__":
 
