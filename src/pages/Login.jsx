@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
-// ==========================================
-// FLASK API URL
-// ==========================================
 const API_URL = "https://company-management-9w737.faable.link";
 
 function Login() {
@@ -12,7 +9,6 @@ function Login() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -21,8 +17,6 @@ function Login() {
             alert("Please enter email and password");
             return;
         }
-
-        setLoading(true);
 
         try {
             const response = await fetch(`${API_URL}/login`, {
@@ -37,22 +31,11 @@ function Login() {
                 })
             });
 
-            const text = await response.text();
-
-            let result;
-
-            try {
-                result = JSON.parse(text);
-            } catch {
-                result = {
-                    message: text || "Invalid response from Flask server"
-                };
-            }
-
-            console.log("Flask response:", response.status, result);
+            const result = await response.json();
 
             if (response.ok) {
-                // Save login information
+                alert(result.message || "Login successful");
+
                 localStorage.setItem(
                     "user_id",
                     String(result.user_id || "")
@@ -68,8 +51,6 @@ function Login() {
                     "true"
                 );
 
-                alert(result.message || "Login successful");
-
                 navigate("/welcome");
             } else {
                 alert(
@@ -80,50 +61,120 @@ function Login() {
             }
 
         } catch (error) {
-            console.error("FLASK CONNECTION ERROR:", error);
+            console.error("Login error:", error);
 
             alert(
-                "Cannot connect to Flask server.\n\n" +
-                "Please make sure the Flask backend is deployed and running."
+                "Cannot connect to Flask server"
             );
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
-        <div className="login-container">
+        <div className="cotn_principal">
 
-            <div className="login-box">
+            <div className="cont_centrar">
 
-                <h2>Login</h2>
+                <div className="cont_login">
 
-                <form onSubmit={handleLogin}>
+                    {/* Background information */}
+                    <div className="cont_info_log_sign_up">
 
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading}
-                    />
+                        <div className="col_md_login">
 
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
-                    />
+                            <div className="cont_ba_opcitiy">
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? "Connecting..." : "Login"}
-                    </button>
+                                <h2>LOGIN</h2>
 
-                </form>
+                                <p>
+                                    Already have an account?
+                                </p>
+
+                                <button
+                                    className="btn_login"
+                                    type="button"
+                                >
+                                    LOGIN
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div className="col_md_sign_up">
+
+                            <div className="cont_ba_opcitiy">
+
+                                <h2>SIGN UP</h2>
+
+                                <p>
+                                    Don't have an account?
+                                </p>
+
+                                <button
+                                    className="btn_sign_up"
+                                    type="button"
+                                    onClick={() => navigate("/signup")}
+                                >
+                                    SIGN UP
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* Login form */}
+                    <div className="cont_forms">
+
+                        <div className="cont_form_login">
+
+                            <h2>Login</h2>
+
+                            <form onSubmit={handleLogin}>
+
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) =>
+                                        setEmail(e.target.value)
+                                    }
+                                />
+
+                                <input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                />
+
+                                <button
+                                    className="btn_login_form"
+                                    type="submit"
+                                >
+                                    LOGIN
+                                </button>
+
+                            </form>
+
+                            <button
+                                className="switch_button"
+                                type="button"
+                                onClick={() => navigate("/signup")}
+                            >
+                                Create an account
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -131,6 +182,4 @@ function Login() {
     );
 }
 
-export default Login;
-
-
+export default Login;  
