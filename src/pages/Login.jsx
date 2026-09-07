@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
-const API_URL = "https://company-management-9w737.faable.link";
+// Backend URL - will use production or local based on environment
+const API_URL = import.meta.env.MODE === 'production' 
+    ? "https://company-management-9w737.faable.link"
+    : "http://localhost:8000";
 
 function Login() {
     const navigate = useNavigate();
@@ -64,7 +67,7 @@ function Login() {
             console.error("Login error:", error);
 
             alert(
-                "Cannot connect to Flask server"
+                "Cannot connect to server. Make sure backend is running at: " + API_URL
             );
         }
     };
@@ -151,6 +154,7 @@ function Login() {
                                     onChange={(e) =>
                                         setPassword(e.target.value)
                                     }
+                                    autoComplete="current-password"
                                 />
 
                                 <button
@@ -182,8 +186,4 @@ function Login() {
     );
 }
 
-<<<<<<< Updated upstream
-export default Login;  
-=======
-export default Login;  
->>>>>>> Stashed changes
+export default Login;
