@@ -1,33 +1,82 @@
+```python
 import os
 import uuid
 
-from flask import Flask, request, jsonify 
+from flask import Flask, request, jsonify
 from flask_cors import CORS
+
+
+# =========================================================
+# FLASK APP
+# =========================================================
+
 app = Flask(__name__)
+
+
+# =========================================================
+# CORS
+# =========================================================
+
+ALLOWED_ORIGINS = [
+    "https://company-management-liart.vercel.app",
+    "http://localhost:5173"
+]
 
 CORS(
     app,
     resources={
         r"/*": {
-            "origins": [
-                "https://company-management-liart.vercel.app",
-                "http://localhost:5173"
+            "origins": ALLOWED_ORIGINS,
+            "methods": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
             ],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
+            "allow_headers": [
+                "Content-Type",
+                "Authorization"
+            ]
         }
-    }
+    },
+    supports_credentials=False
 )
 
 
+@app.after_request
+def add_cors_headers(response):
+
+    origin = request.headers.get("Origin")
+
+    if origin in ALLOWED_ORIGINS:
+
+        response.headers["Access-Control-Allow-Origin"] = origin
+
+        response.headers["Access-Control-Allow-Headers"] = (
+            "Content-Type, Authorization"
+        )
+
+        response.headers["Access-Control-Allow-Methods"] = (
+            "GET, POST, PUT, DELETE, OPTIONS"
+        )
+
+    return response
+
+
+# =========================================================
 # DATABASE TYPE
+# =========================================================
 
 DATABASE_TYPE = os.environ.get(
     "DATABASE_TYPE",
     "sqlserver"
 ).lower()
 
+
+# =========================================================
 # DATABASE CONNECTION
+# =========================================================
 
 def get_connection():
 
@@ -53,7 +102,10 @@ def get_connection():
         "Trusted_Connection=yes;"
     )
 
+
+# =========================================================
 # DATABASE EXECUTE HELPER
+# =========================================================
 
 def execute_query(cursor, query, params=None):
 
@@ -65,20 +117,32 @@ def execute_query(cursor, query, params=None):
     else:
         cursor.execute(query, params)
 
-# HOME
 
-@app.route("/", methods=["GET"])
+# =========================================================
+# HOME
+# =========================================================
+
+@app.route("/", methods=["GET", "OPTIONS"])
 def home():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     return jsonify({
         "message": "Flask API is working",
         "database": DATABASE_TYPE
     }), 200
 
-# SIGNUP
 
-@app.route("/signup", methods=["POST"])
+# =========================================================
+# SIGNUP
+# =========================================================
+
+@app.route("/signup", methods=["POST", "OPTIONS"])
 def signup():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     data = request.get_json(silent=True) or {}
 
@@ -88,6 +152,7 @@ def signup():
     password = data.get("password")
 
     if not name or not email or not password:
+
         return jsonify({
             "message": "Name, email and password are required"
         }), 400
@@ -111,6 +176,7 @@ def signup():
         )
 
         if cursor.fetchone():
+
             return jsonify({
                 "message": "Email already registered"
             }), 400
@@ -166,10 +232,16 @@ def signup():
         if connection:
             connection.close()
 
-# LOGIN
 
-@app.route("/login", methods=["POST"])
+# =========================================================
+# LOGIN
+# =========================================================
+
+@app.route("/login", methods=["POST", "OPTIONS"])
 def login():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     data = request.get_json(silent=True) or {}
 
@@ -177,6 +249,7 @@ def login():
     password = data.get("password")
 
     if not email or not password:
+
         return jsonify({
             "message": "Email and password are required"
         }), 400
@@ -206,6 +279,7 @@ def login():
         user = cursor.fetchone()
 
         if user:
+
             return jsonify({
                 "message": "Login successful",
                 "user_id": user[0],
@@ -232,10 +306,16 @@ def login():
         if connection:
             connection.close()
 
-# ADD COMPANY
 
-@app.route("/companies", methods=["POST"])
+# =========================================================
+# ADD COMPANY
+# =========================================================
+
+@app.route("/companies", methods=["POST", "OPTIONS"])
 def add_company():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     data = request.get_json(silent=True) or {}
 
@@ -243,6 +323,7 @@ def add_company():
     company_description = data.get("company_description")
 
     if not company_name or not company_description:
+
         return jsonify({
             "message": "Company name and description are required"
         }), 400
@@ -302,10 +383,16 @@ def add_company():
         if connection:
             connection.close()
 
-# GET COMPANIES
 
-@app.route("/companies", methods=["GET"])
+# =========================================================
+# GET COMPANIES
+# =========================================================
+
+@app.route("/companies", methods=["GET", "OPTIONS"])
 def get_companies():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -329,6 +416,7 @@ def get_companies():
         result = []
 
         for row in rows:
+
             result.append({
                 "id": row[0],
                 "company_name": row[1]
@@ -352,10 +440,16 @@ def get_companies():
         if connection:
             connection.close()
 
-# ADD PRODUCT
 
-@app.route("/products", methods=["POST"])
+# =========================================================
+# ADD PRODUCT
+# =========================================================
+
+@app.route("/products", methods=["POST", "OPTIONS"])
 def add_product():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     data = request.get_json(silent=True) or {}
 
@@ -372,6 +466,7 @@ def add_product():
         or number_of_items is None
         or retail_price is None
     ):
+
         return jsonify({
             "message": "All product fields are required"
         }), 400
@@ -395,6 +490,7 @@ def add_product():
         )
 
         if not cursor.fetchone():
+
             return jsonify({
                 "message": "Company not found"
             }), 404
@@ -464,10 +560,16 @@ def add_product():
         if connection:
             connection.close()
 
-# GET PRODUCTS
 
-@app.route("/products", methods=["GET"])
+# =========================================================
+# GET PRODUCTS
+# =========================================================
+
+@app.route("/products", methods=["GET", "OPTIONS"])
 def get_products():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -535,10 +637,16 @@ def get_products():
         if connection:
             connection.close()
 
-# ADD VENDOR
 
-@app.route("/vendors", methods=["POST"])
+# =========================================================
+# ADD VENDOR
+# =========================================================
+
+@app.route("/vendors", methods=["POST", "OPTIONS"])
 def add_vendor():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     data = request.get_json(silent=True) or {}
 
@@ -553,6 +661,7 @@ def add_vendor():
         or not contact
         or not address
     ):
+
         return jsonify({
             "message": "All vendor fields are required"
         }), 400
@@ -680,10 +789,16 @@ def add_vendor():
         if connection:
             connection.close()
 
-# GET VENDORS
 
-@app.route("/vendors", methods=["GET"])
+# =========================================================
+# GET VENDORS
+# =========================================================
+
+@app.route("/vendors", methods=["GET", "OPTIONS"])
 def get_vendors():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -740,10 +855,19 @@ def get_vendors():
         if connection:
             connection.close()
 
-# ASSIGN STOCK
 
-@app.route("/vendors/assign-stock", methods=["POST"])
+# =========================================================
+# ASSIGN STOCK
+# =========================================================
+
+@app.route(
+    "/vendors/assign-stock",
+    methods=["POST", "OPTIONS"]
+)
 def assign_stock():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     data = request.get_json(silent=True) or {}
 
@@ -757,6 +881,7 @@ def assign_stock():
         or product_id is None
         or assign_quantity is None
     ):
+
         return jsonify({
             "message": "Vendor, product and quantity are required"
         }), 400
@@ -778,21 +903,25 @@ def assign_stock():
         }), 400
 
     if vendor_id <= 0:
+
         return jsonify({
             "message": "Invalid vendor ID"
         }), 400
 
     if product_id <= 0:
+
         return jsonify({
             "message": "Invalid product ID"
         }), 400
 
     if assign_quantity <= 0:
+
         return jsonify({
             "message": "Quantity must be greater than 0"
         }), 400
 
     if paid_amount < 0:
+
         return jsonify({
             "message": "Paid amount cannot be negative"
         }), 400
@@ -816,6 +945,7 @@ def assign_stock():
         )
 
         if not cursor.fetchone():
+
             return jsonify({
                 "message": "Vendor not found"
             }), 404
@@ -850,6 +980,7 @@ def assign_stock():
         product = cursor.fetchone()
 
         if not product:
+
             return jsonify({
                 "message": "Product not found"
             }), 404
@@ -908,10 +1039,15 @@ def assign_stock():
         )
 
         if credit_amount == 0:
+
             payment_status = "Paid"
+
         elif paid_amount > 0:
+
             payment_status = "Half"
+
         else:
+
             payment_status = "Credit"
 
         execute_query(
@@ -1009,10 +1145,19 @@ def assign_stock():
         if connection:
             connection.close()
 
-# GET ASSIGNED STOCK
 
-@app.route("/vendors/assigned-stock", methods=["GET"])
+# =========================================================
+# GET ASSIGNED STOCK
+# =========================================================
+
+@app.route(
+    "/vendors/assigned-stock",
+    methods=["GET", "OPTIONS"]
+)
 def get_assigned_stock():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -1064,19 +1209,33 @@ def get_assigned_stock():
             result.append({
 
                 "id": row[0],
+
                 "vendor_id": row[0],
+
                 "vendor_name": row[1],
+
                 "business_name": row[2],
+
                 "product_id": row[3],
+
                 "product_name": row[4],
+
                 "serial_code": row[5],
+
                 "retail_price": float(row[6] or 0),
+
                 "assigned_quantity": int(row[7] or 0),
+
                 "remaining_stock": remaining_stock,
+
                 "total_amount": float(row[9] or 0),
+
                 "paid_amount": float(row[10] or 0),
+
                 "credit_amount": float(row[11] or 0),
+
                 "payment_status": row[12]
+
             })
 
         return jsonify(result), 200
@@ -1097,10 +1256,19 @@ def get_assigned_stock():
         if connection:
             connection.close()
 
-# DASHBOARD COUNTS
 
-@app.route("/dashboard/counts", methods=["GET"])
+# =========================================================
+# DASHBOARD COUNTS
+# =========================================================
+
+@app.route(
+    "/dashboard/counts",
+    methods=["GET", "OPTIONS"]
+)
 def dashboard_counts():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -1132,9 +1300,13 @@ def dashboard_counts():
         vendor_count = cursor.fetchone()[0]
 
         return jsonify({
+
             "companies": company_count,
+
             "products": product_count,
+
             "vendors": vendor_count
+
         }), 200
 
     except Exception as e:
@@ -1153,10 +1325,19 @@ def dashboard_counts():
         if connection:
             connection.close()
 
-# COMPANY COUNT
 
-@app.route("/companies/count", methods=["GET"])
+# =========================================================
+# COMPANY COUNT
+# =========================================================
+
+@app.route(
+    "/companies/count",
+    methods=["GET", "OPTIONS"]
+)
 def companies_count():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -1193,10 +1374,19 @@ def companies_count():
         if connection:
             connection.close()
 
-# PRODUCT COUNT
 
-@app.route("/products/count", methods=["GET"])
+# =========================================================
+# PRODUCT COUNT
+# =========================================================
+
+@app.route(
+    "/products/count",
+    methods=["GET", "OPTIONS"]
+)
 def products_count():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -1233,10 +1423,19 @@ def products_count():
         if connection:
             connection.close()
 
-# VENDOR COUNT
 
-@app.route("/vendors/count", methods=["GET"])
+# =========================================================
+# VENDOR COUNT
+# =========================================================
+
+@app.route(
+    "/vendors/count",
+    methods=["GET", "OPTIONS"]
+)
 def vendors_count():
+
+    if request.method == "OPTIONS":
+        return "", 204
 
     connection = None
     cursor = None
@@ -1273,7 +1472,10 @@ def vendors_count():
         if connection:
             connection.close()
 
+
+# =========================================================
 # START FLASK
+# =========================================================
 
 if __name__ == "__main__":
 
@@ -1286,3 +1488,4 @@ if __name__ == "__main__":
         port=port,
         debug=False
     )
+```
