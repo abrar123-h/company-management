@@ -1,6 +1,10 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
+
+// PUBLIC FLASK API
+const API_URL = "https://company-management-9w737.faable.link";
 
 function Login() {
 
@@ -16,7 +20,7 @@ function Login() {
         try {
 
             const response = await fetch(
-                "https://company-management-9w737.faable.link/login",
+                `${API_URL}/login`,
                 {
                     method: "POST",
                     headers: {
@@ -34,6 +38,7 @@ function Login() {
             if (response.ok) {
 
                 alert("Login successful!");
+
                 navigate("/welcome");
 
             } else {
@@ -49,7 +54,10 @@ function Login() {
 
             console.error("Login error:", error);
 
-            alert("Cannot connect to Flask API");
+            alert(
+                "Cannot connect to Flask API. " +
+                "Please check the Flask server."
+            );
         }
     };
 
@@ -163,3 +171,4 @@ function Login() {
 }
 
 export default Login;
+
