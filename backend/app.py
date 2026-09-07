@@ -1,4 +1,4 @@
-
+```python
 import os
 import uuid
 
@@ -16,17 +16,20 @@ app = Flask(__name__)
 # =========================================================
 # CORS
 # =========================================================
-
-ALLOWED_ORIGINS = [
-    "https://company-management-liart.vercel.app",
-    "http://localhost:5173"
-]
+#
+# IMPORTANT:
+# This allows your Vercel frontend to communicate with
+# the Flask API, including OPTIONS preflight requests.
+#
+# For production you can later restrict this to your
+# permanent Vercel domain.
+# =========================================================
 
 CORS(
     app,
     resources={
         r"/*": {
-            "origins": ALLOWED_ORIGINS,
+            "origins": "*",
             "methods": [
                 "GET",
                 "POST",
@@ -42,26 +45,6 @@ CORS(
     },
     supports_credentials=False
 )
-
-
-@app.after_request
-def add_cors_headers(response):
-
-    origin = request.headers.get("Origin")
-
-    if origin in ALLOWED_ORIGINS:
-
-        response.headers["Access-Control-Allow-Origin"] = origin
-
-        response.headers["Access-Control-Allow-Headers"] = (
-            "Content-Type, Authorization"
-        )
-
-        response.headers["Access-Control-Allow-Methods"] = (
-            "GET, POST, PUT, DELETE, OPTIONS"
-        )
-
-    return response
 
 
 # =========================================================
@@ -124,9 +107,6 @@ def execute_query(cursor, query, params=None):
 
 @app.route("/", methods=["GET", "OPTIONS"])
 def home():
-
-    if request.method == "OPTIONS":
-        return "", 204
 
     return jsonify({
         "message": "Flask API is working",
@@ -1488,4 +1468,4 @@ if __name__ == "__main__":
         port=port,
         debug=False
     )
-
+```
