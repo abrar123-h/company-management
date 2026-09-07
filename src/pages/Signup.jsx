@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
@@ -52,7 +51,11 @@ function Signup() {
                 };
             }
 
-            console.log("Flask signup response:", response.status, result);
+            console.log(
+                "Flask signup response:",
+                response.status,
+                result
+            );
 
             if (response.ok) {
                 alert(result.message || "Signup successful");
@@ -71,11 +74,10 @@ function Signup() {
             }
 
         } catch (error) {
-            console.error("FLASK CONNECTION ERROR:", error);
+            console.error("Signup error:", error);
 
             alert(
-                "Cannot connect to Flask server.\n\n" +
-                "Please make sure the Flask backend is deployed and running."
+                "Cannot connect to Flask server"
             );
         } finally {
             setLoading(false);
@@ -83,59 +85,131 @@ function Signup() {
     };
 
     return (
-        <div className="signup-container">
-            <div className="signup-box">
+        <div className="cotn_principal">
 
-                <h2>Sign Up</h2>
+            <div className="cont_centrar">
 
-                <form onSubmit={handleSignup}>
+                <div className="cont_login">
 
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        disabled={loading}
-                    />
+                    {/* Background information */}
+                    <div className="cont_info_log_sign_up">
 
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading}
-                    />
+                        {/* Login side */}
+                        <div className="col_md_login">
 
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
-                    />
+                            <div className="cont_ba_opcitiy">
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? "Creating Account..." : "Sign Up"}
-                    </button>
+                                <h2>LOGIN</h2>
 
-                </form>
+                                <p>
+                                    Already have an account?
+                                </p>
 
-                <p>
-                    Already have an account?{" "}
-                    <span
-                        onClick={() => navigate("/")}
-                        style={{ cursor: "pointer" }}
-                    >
-                        Login
-                    </span>
-                </p>
+                                <button
+                                    className="btn_login"
+                                    type="button"
+                                    onClick={() => navigate("/")}
+                                >
+                                    LOGIN
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        {/* Signup side */}
+                        <div className="col_md_sign_up">
+
+                            <div className="cont_ba_opcitiy">
+
+                                <h2>SIGN UP</h2>
+
+                                <p>
+                                    Create your account
+                                </p>
+
+                                <button
+                                    className="btn_sign_up"
+                                    type="button"
+                                >
+                                    SIGN UP
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {/* Signup form */}
+                    <div className="cont_forms">
+
+                        <div className="cont_form_sign_up">
+
+                            <h2>Sign Up</h2>
+
+                            <form onSubmit={handleSignup}>
+
+                                <input
+                                    type="text"
+                                    placeholder="Username"
+                                    value={username}
+                                    onChange={(e) =>
+                                        setUsername(e.target.value)
+                                    }
+                                    disabled={loading}
+                                />
+
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) =>
+                                        setEmail(e.target.value)
+                                    }
+                                    disabled={loading}
+                                />
+
+                                <input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    disabled={loading}
+                                />
+
+                                <button
+                                    className="btn_sign_up_form"
+                                    type="submit"
+                                    disabled={loading}
+                                >
+                                    {loading
+                                        ? "Creating Account..."
+                                        : "SIGN UP"}
+                                </button>
+
+                            </form>
+
+                            <button
+                                className="switch_button"
+                                type="button"
+                                onClick={() => navigate("/")}
+                            >
+                                Already have an account? Login
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
+
         </div>
     );
 }
 
-export default Signup; 
+export default Signup;
