@@ -3,9 +3,22 @@ import uuid
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
 app = Flask(__name__)
-CORS(app)
+
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": [
+                "https://company-management-liart.vercel.app",
+                "http://localhost:5173"
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+        }
+    }
+)
+
 
 # DATABASE TYPE
 
