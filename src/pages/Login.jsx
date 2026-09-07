@@ -1,11 +1,10 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
-// Backend URL - will use production or local based on environment
-const API_URL = import.meta.env.MODE === 'production' 
-    ? "https://company-management-9w737.faable.link"
-    : "http://localhost:8000";
+// LOCAL FLASK API
+const API_URL = "http://127.0.0.1:8000";
 
 function Login() {
     const navigate = useNavigate();
@@ -66,9 +65,7 @@ function Login() {
         } catch (error) {
             console.error("Login error:", error);
 
-            alert(
-                "Cannot connect to server. Make sure backend is running at: " + API_URL
-            );
+            alert("Cannot connect to Flask server");
         }
     };
 
@@ -103,7 +100,6 @@ function Login() {
 
                         </div>
 
-
                         <div className="col_md_sign_up">
 
                             <div className="cont_ba_opcitiy">
@@ -128,7 +124,6 @@ function Login() {
 
                     </div>
 
-
                     {/* Login form */}
                     <div className="cont_forms">
 
@@ -142,6 +137,7 @@ function Login() {
                                     type="email"
                                     placeholder="Email"
                                     value={email}
+                                    autoComplete="username"
                                     onChange={(e) =>
                                         setEmail(e.target.value)
                                     }
@@ -151,10 +147,10 @@ function Login() {
                                     type="password"
                                     placeholder="Password"
                                     value={password}
+                                    autoComplete="current-password"
                                     onChange={(e) =>
                                         setPassword(e.target.value)
                                     }
-                                    autoComplete="current-password"
                                 />
 
                                 <button
@@ -187,3 +183,4 @@ function Login() {
 }
 
 export default Login;
+
