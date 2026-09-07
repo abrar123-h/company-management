@@ -1,11 +1,12 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
 
 // ==========================================
-// FLASK API URL
+// LOCAL FLASK API URL
 // ==========================================
-const API_URL = "https://company-management-9w737.faable.link";
+const API_URL = "http://127.0.0.1:8000";
 
 function Signup() {
     const navigate = useNavigate();
@@ -76,9 +77,7 @@ function Signup() {
         } catch (error) {
             console.error("Signup error:", error);
 
-            alert(
-                "Cannot connect to Flask server"
-            );
+            alert("Cannot connect to Flask server");
         } finally {
             setLoading(false);
         }
@@ -158,6 +157,7 @@ function Signup() {
                                         setUsername(e.target.value)
                                     }
                                     disabled={loading}
+                                    autoComplete="username"
                                 />
 
                                 <input
@@ -168,6 +168,7 @@ function Signup() {
                                         setEmail(e.target.value)
                                     }
                                     disabled={loading}
+                                    autoComplete="email"
                                 />
 
                                 <input
@@ -178,6 +179,7 @@ function Signup() {
                                         setPassword(e.target.value)
                                     }
                                     disabled={loading}
+                                    autoComplete="new-password"
                                 />
 
                                 <button
