@@ -1,5 +1,3 @@
-
- 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
@@ -18,7 +16,7 @@ function Login() {
         try {
 
             const response = await fetch(
-                "http://127.0.0.1:8000/login",
+                "https://company-management-9w737.faable.link/login",
                 {
                     method: "POST",
                     headers: {
@@ -40,13 +38,18 @@ function Login() {
 
             } else {
 
-                alert(result.message || result.error);
+                alert(
+                    result.message ||
+                    result.error ||
+                    "Login failed"
+                );
             }
 
         } catch (error) {
 
-            console.error(error);
-            alert("Cannot connect to Flask server");
+            console.error("Login error:", error);
+
+            alert("Cannot connect to Flask API");
         }
     };
 
@@ -57,10 +60,10 @@ function Login() {
 
                 <div className="cont_login">
 
-                    {/* Background / Information section */}
                     <div className="cont_info_log_sign_up">
 
                         <div className="col_md_login">
+
                             <div className="cont_ba_opcitiy">
 
                                 <h2>Already have an account?</h2>
@@ -77,9 +80,11 @@ function Login() {
                                 </button>
 
                             </div>
+
                         </div>
 
                         <div className="col_md_sign_up">
+
                             <div className="cont_ba_opcitiy">
 
                                 <h2>New here?</h2>
@@ -96,11 +101,11 @@ function Login() {
                                 </button>
 
                             </div>
+
                         </div>
 
                     </div>
 
-                    {/* Login form */}
                     <div className="cont_forms cont_forms_active_login">
 
                         <div className="cont_form_login">
@@ -113,7 +118,9 @@ function Login() {
                                     type="email"
                                     placeholder="Email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) =>
+                                        setEmail(e.target.value)
+                                    }
                                     required
                                 />
 
@@ -121,7 +128,9 @@ function Login() {
                                     type="password"
                                     placeholder="Password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
                                     required
                                 />
 
@@ -154,5 +163,3 @@ function Login() {
 }
 
 export default Login;
-
-              
