@@ -8,10 +8,10 @@ import AssignStockDialog from "./AssignStockDialog";
 
 function Welcome() {
 
-    const [showCompany, setShowCompany] = useState(false);
+    const [showCompany, setShowCompany] = useState(false); 
     const [showProduct, setShowProduct] = useState(false);
     const [showVendor, setShowVendor] = useState(false);
-    const [showAssignStock, setShowAssignStock] = useState(false);
+    const [showAssignStock, setShowAssignStock] = useState(false);   
 
     const [companyCount, setCompanyCount] = useState(0);
     const [productCount, setProductCount] = useState(0);
